@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart'; // Importa GoRouter
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:myapp/types/product.dart';
+import 'package:myapp/routes/app_routes.dart';
 
 import '../providers/product_provider.dart';
 import '../widgets/card_item_product.dart';
@@ -18,55 +20,46 @@ class ProductsListView extends ConsumerWidget {
         title: const Text("List products View"),
       ),
       drawer: const DrawerWidget(),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            ...productProv.when(
-              data: (List<Product> lp) {
-                return lp.map((product) {
-                  return CardItemProduct(
-                    url: product.urlImage,
-                    name: product.name,
-                    price: product.price,
-                    stock: product.stock,
-                    description: product.description,
+      body: productProv.when(
+        data: (List<Product> lp) {
+          if (lp.isEmpty) {
+            return const Center(
+              child: Text('No products available'),
+            );
+          }
+          return ListView.builder(
+            itemCount: lp.length,
+            itemBuilder: (context, index) {
+              final product = lp[index];
+              return InkWell(
+                onTap: () {
+                  context.push(
+                    AppRoutes.productDetail,
+                    extra: product.id,
                   );
-                }).toList();
-              },
-              error: (obj, err) => [Text(err.toString()), const Text('===='), Text(obj.toString())],
-              loading: () => [const CircularProgressIndicator()],
-            )
-            // ...[ Text("1"), Text("2") ]
-            // CardItemProduct(
-            //   url: "https://images.unsplash.com/photo-1707767787271-b00e648a61e4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8fHx8fHx8MTcxNzYzMTgzMw&ixlib=rb-4.0.3&q=80&w=200",
-            //   description: "Descripción",
-            //   name: "Producto 1",
-            //   price: 5.25,
-            //   stock: 10,
-            // ),
-            // CardItemProduct(
-            //   url: "https://images.unsplash.com/photo-1707767787271-b00e648a61e4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8fHx8fHx8MTcxNzYzMTgzMw&ixlib=rb-4.0.3&q=80&w=200",
-            //   description: "Descripción",
-            //   name: "Producto 1",
-            //   price: 5.25,
-            //   stock: 10,
-            // ),
-            // CardItemProduct(
-            //   url: "https://images.unsplash.com/photo-1707767787271-b00e648a61e4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8fHx8fHx8MTcxNzYzMTgzMw&ixlib=rb-4.0.3&q=80&w=200",
-            //   description: "Descripción",
-            //   name: "Producto 1",
-            //   price: 5.25,
-            //   stock: 10,
-            // ),
-            // CardItemProduct(
-            //   url: "https://images.unsplash.com/photo-1707767787271-b00e648a61e4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8fHx8fHx8MTcxNzYzMTgzMw&ixlib=rb-4.0.3&q=80&w=200",
-            //   description: "Descripción",
-            //   name: "Producto 1",
-            //   price: 5.25,
-            //   stock: 10,
-            // ),
-          ],
+                },
+                child: CardItemProduct(
+                  url: product.urlImage,
+                  name: product.name,
+                  price: product.price,
+                  stock: product.stock,
+                  description: product.description,
+                ),
+              );
+            },
+          );
+        },
+        error: (obj, err) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(err.toString()),
+              const Text('===='),
+              Text(obj.toString())
+            ],
+          ),
         ),
+        loading: () => const Center(child: CircularProgressIndicator()),
       ),
     );
   }
